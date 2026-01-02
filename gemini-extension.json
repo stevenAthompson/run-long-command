@@ -1,0 +1,11 @@
+{
+  "name": "run-long-command",
+  "version": "1.0.0",
+  "mcpServers": {
+    "runLongCommand": {
+      "command": "node",
+      "args": ["${extensionPath}${/}dist${/}run_long_command.js"],
+      "cwd": "${extensionPath}"
+    }
+  }
+}
