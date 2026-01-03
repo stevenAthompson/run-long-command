@@ -26,3 +26,4 @@
 ## 2026-01-02 (Continued)
 - Updated README.md with Gemini CLI installation instructions.
 
+- Enabling version control for node_modules to simplify end-user installation.

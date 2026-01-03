@@ -69,3 +69,4 @@ It's designed to handle shell commands that take a long time to finish, allowing
 - **Session Naming**: Initially, there was a discrepancy between the session name expected by the code (`gemini-cli`) and the name used in the helper script. This was resolved by standardizing on `gemini-cli`.
 - **Waking up the Agent**: To ensure the Gemini CLI reliably receives the notification, a "slow-typing" technique was used, sending an Escape and Ctrl-u to clear the current prompt line before typing the completion message and pressing Enter.
 - **ESM Integration**: Running integration tests with `ts-node` required careful handling of ESM modules in a project configured with `"type": "module"`. This was overcome by compiling tests with `tsc` before execution.
+- **Distribution**: Users installing via git might not run `npm install`. To support "plug-and-play" installation, `node_modules` are now checked into the repository.
