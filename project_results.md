@@ -16,6 +16,7 @@ The goal of this project is to create a Gemini CLI extension called `run_long_co
 ## Phases and Work Done
 ### Phase 4: Real-time Validation
 - Successfully validated the extension with a 20-second sleep command; confirmed tmux notification wakes up the agent upon completion.
+- Updated git configuration to track the `dist` directory, ensuring build artifacts are available for immediate use.
 ### Phase 1: Initialization
 - Setup project documentation (`progress.md`, `project_results.md`).
 - Analyzed existing templates and examples.
