@@ -36,3 +36,7 @@
 ## 2026-01-02 (Continued)
 - Updated .gitignore to include the `dist` directory and ignore `node_modules`.
 - Pushed changes to GitHub.
+
+## 2026-01-02 (Continued)
+- Corrected .gitignore configuration: Removed `node_modules/` to ensure dependencies are tracked in the repository as intended for the "plug-and-play" distribution goal. This fixes the "missing files in GitHub" issue reported by the user.
+- Verified tests pass with `npm test`.

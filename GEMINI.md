@@ -9,6 +9,8 @@ The goal of the project is to create a Gemini Cli Extension. There are basic tem
 
 	The code should fail gracefully when  gemini was started outside of tmux and commands can't be sent, and it should fail BEFORE trying to execute the long runnning command. 
 
+	IMPORTANT: Do NOT add "node_modules" to .gitignore. This project requires dependencies to be committed to the repository.
+
 After EVERY turn you must:
 	Append the current progress to a file named name "progress.md". Include a brief description of the most recent work. This file should only ever be appended to: NEVER delete this file. NEVER edit this file. It is a log of all progress, even mistakes. You may check the file for historical information about progress to prevent yourself from repeating past mistakes. 
 	Do NOT edit unit tests to work around failing tests. Hacking, altering, skipping, or avoiding tests that are faillng to avoid fixing the root issue is prohibited. If you are stuck ask for help and end your turn instead.
