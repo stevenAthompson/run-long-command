@@ -3,7 +3,7 @@
 ## Overview
 The goal of this project is to create a Gemini CLI extension called `run_long_command`. This tool allows Gemini to execute long-running shell commands in the background and receive a notification once they are complete. This prevents Gemini from timing out or being blocked while waiting for a command to finish.
 
-**Status: Ready for Release** (Validated 2026-01-02)
+**Status: Ready for Release** (Validated 2026-01-02, Post-Fix)
 
 ## Stated Goals
 - Execute arbitrary shell commands in the background.
@@ -11,6 +11,7 @@ The goal of this project is to create a Gemini CLI extension called `run_long_co
 - Use `tmux` to send a "wake up" message to the `gemini-cli` session when the command completes.
 - Fail gracefully if not running inside a `tmux` session named `gemini-cli`.
 - Provide professional engineering quality with documentation, logging, and unit tests.
+- Maintain a fully portable codebase including tracked `node_modules` for seamless installation.
 
 ## Phases and Work Done
 ### Phase 4: Real-time Validation
