@@ -3,6 +3,8 @@
 ## Overview
 The goal of this project is to create a Gemini CLI extension called `run_long_command`. This tool allows Gemini to execute long-running shell commands in the background and receive a notification once they are complete. This prevents Gemini from timing out or being blocked while waiting for a command to finish.
 
+**Status: Ready for Release** (Validated 2026-01-02)
+
 ## Stated Goals
 - Execute arbitrary shell commands in the background.
 - Return immediately to Gemini, allowing it to continue other tasks.
