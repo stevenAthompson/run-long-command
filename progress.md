@@ -40,3 +40,9 @@
 ## 2026-01-02 (Continued)
 - Corrected .gitignore configuration: Removed `node_modules/` to ensure dependencies are tracked in the repository as intended for the "plug-and-play" distribution goal. This fixes the "missing files in GitHub" issue reported by the user.
 - Verified tests pass with `npm test`.
+
+## 2026-01-02 (Continued)
+- Verified that `dist/` directory is tracked and up to date in `run-long-command`.
+- Confirmed `run-long-command` is fully synced with GitHub.
+- Switched to `self-command` sibling project, rebuilt `dist/`, and pushed pending documentation and build artifact updates to GitHub.
+- Both extensions are now fully verified and synced.
