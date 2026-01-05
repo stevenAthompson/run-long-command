@@ -89,14 +89,41 @@ server.registerTool(
     const child = spawn(command, {
       shell: true,
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
+
+    let output = '';
+    const MAX_OUTPUT_LENGTH = 200;
+
+    if (child.stdout) {
+      child.stdout.on('data', (data) => {
+        if (output.length < MAX_OUTPUT_LENGTH) {
+          output += data.toString();
+        }
+      });
+    }
+
+    if (child.stderr) {
+      child.stderr.on('data', (data) => {
+        if (output.length < MAX_OUTPUT_LENGTH) {
+          output += data.toString();
+        }
+      });
+    }
 
     child.unref();
 
     // Set up completion handler
     child.on('close', async (code) => {
-      const completionMessage = `Background command completed: "${command}" (Exit code: ${code})`;
+      let completionMessage = `Background command completed: "${command}" (Exit code: ${code})`;
+      if (output) {
+        const truncatedOutput = output.length > MAX_OUTPUT_LENGTH ? output.substring(0, MAX_OUTPUT_LENGTH) + '...' : output;
+        // Escape newlines for the notification message to be one line or handled gracefully
+        // Actually, for tmux send-keys, newlines might be interpreted as Enter.
+        // Let's replace newlines with spaces or explicit symbols for the notification.
+        const safeOutput = truncatedOutput.replace(/\n/g, ' ').replace(/\r/g, '');
+        completionMessage += ` Output: [${safeOutput}]`;
+      }
       await notifyGemini(completionMessage);
     });
 

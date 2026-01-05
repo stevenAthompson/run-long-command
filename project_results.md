@@ -14,13 +14,18 @@ The `run_long_command` project provides a Gemini CLI extension that enables the 
 - **Tmux Integration:** Safely wakes up the Gemini agent by injecting commands into the `gemini-cli` tmux session.
 - **Context Awareness:** Inherits the user's current working directory (CWD), allowing relative paths (e.g., `.venv/bin/python`) to work correctly.
 - **Feedback:** Provides immediate PID and CWD feedback, and asynchronous completion/failure notifications.
+- **Output Capture:** Captures and reports the first 200 characters of stdout/stderr in the completion notification to assist with debugging.
 
 ## Test Results
 - **Integration Test (30s sleep):** Passed (Exit code 0)
 - **CWD & Env Var Test:** Passed (Verified via verification.log)
+- **GitHub Install Verification:** Passed (Exit code 0).
+- **Manual Verification (10s sleep):** Passed (echo "hello" && sleep 10 && echo "world").
+- **Manual Verification (60s sleep):** Passed (date && sleep 60 && date).
 Current test suite status:
-- **Pass Rate:** 100% (5/5 tests passed)
-- **Coverage:** Verified tool registration, tmux session checks, spawn logic, and notification mechanism (success and failure cases).
+- **Pass Rate:** 100% (7/7 tests passed)
+- **Pass Rate:** 100% (6/6 tests passed)
+- **Coverage:** Verified tool registration, tmux session checks, spawn logic, notification mechanism, and output capturing.
 
 ## FAQ
 ### How does the notification work?
@@ -31,6 +36,9 @@ Yes, each call to `run_long_command` spawns a new independent process. You will 
 
 ### What happens if I close the tmux session?
 The background processes will continue to run (since they are detached), but the notification will fail because it won't be able to find the `gemini-cli` session.
+
+### Why do I see command output in the notification?
+To help debug issues where commands exit unexpectedly (e.g., immediate exit due to quoting errors), the tool now captures a summary of the command's output and includes it in the completion message.
 
 ## Setup and Testing Pipeline
 ### Installation
@@ -68,6 +76,8 @@ To reproduce the environment:
 - **Challenge:** Asynchronous Notification.
     - **Detail:** Standard tool calls must return a response immediately. We needed a way to "call back" later.
     - **Optimal Solution:** `tmux` provides a reliable IPC mechanism to "wake up" the CLI by simulating user input. This avoids the need for a persistent polling connection or complex webhooks.
-
-## Implementation Details
-The core logic resides in `run_long_command.ts`. It uses `child_process.spawn` with `{ detached: true, stdio: 'ignore' }`. The server maintains a reference to the child process's `close` event. When triggered, it executes a shell command: `tmux send-keys -t gemini-cli "The background command ... finished" C-m`.
+- **Challenge:** Debugging Immediate Exits.
+    - **Detail:** Users were confused when commands returned immediately due to shell syntax errors (e.g. quoting).
+    - **Optimal Solution:** Capturing `stdout` and `stderr` and including a truncated summary in the notification allows users to see *why* a command finished, rather than just that it finished.
+- **Challenge:** Implementation Details
+The core logic resides in `run_long_command.ts`. It uses `child_process.spawn` with `{ detached: true, stdio: ['ignore', 'pipe', 'pipe'] }`. The server maintains a reference to the child process's `close` event. When triggered, it executes a shell command: `tmux send-keys -t gemini-cli "The background command ... finished. Output: [...]" C-m`.

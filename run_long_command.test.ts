@@ -78,13 +78,15 @@ describe('run_long_command MCP Server', () => {
     (execSync as Mock).mockReturnValue(Buffer.from('')); // has-session succeeds
     const mockChild = new EventEmitter() as any;
     mockChild.unref = vi.fn();
+    mockChild.stdout = new EventEmitter();
+    mockChild.stderr = new EventEmitter();
     (spawn as Mock).mockReturnValue(mockChild);
 
     const result = await toolFn({ command: 'sleep 10' });
 
     expect(spawn).toHaveBeenCalledWith('sleep 10', expect.objectContaining({
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', 'pipe', 'pipe'],
     }));
     expect(mockChild.unref).toHaveBeenCalled();
     expect(result.content[0].text).toContain('started in the background');
@@ -95,6 +97,8 @@ describe('run_long_command MCP Server', () => {
     (execSync as Mock).mockReturnValue(Buffer.from('')); // All execSync calls succeed
     const mockChild = new EventEmitter() as any;
     mockChild.unref = vi.fn();
+    mockChild.stdout = new EventEmitter();
+    mockChild.stderr = new EventEmitter();
     (spawn as Mock).mockReturnValue(mockChild);
 
     await toolFn({ command: 'echo hello' });
@@ -129,6 +133,8 @@ describe('run_long_command MCP Server', () => {
     (execSync as Mock).mockReturnValue(Buffer.from('')); 
     const mockChild = new EventEmitter() as any;
     mockChild.unref = vi.fn();
+    mockChild.stdout = new EventEmitter();
+    mockChild.stderr = new EventEmitter();
     (spawn as Mock).mockReturnValue(mockChild);
 
     await toolFn({ command: 'invalid-command' });
