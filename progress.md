@@ -3,7 +3,10 @@
 - Modified `run_long_command.ts` to capture `stdout` and `stderr` from the background process.
 - Updated notification logic to include a truncated summary (first 200 chars) of the output.
 - This aids in debugging when a command exits unexpectedly or behaves differently than the user intended.
-- Verified with reproduction scripts and updated unit tests.2026-01-04: Started test of run_long_command with 'echo "hello" && sleep 10 && echo "world"'. Command is running in background.
+- Verified with reproduction scripts and updated unit tests.
+
+2026-01-04: Started test of run_long_command with 'echo "hello" && sleep 10 && echo "world"'. Command is running in background.
 2026-01-04: Test of run_long_command with 'echo "hello" && sleep 10 && echo "world"' completed successfully. Output captured and notification received via tmux.
 2026-01-04: Started test of run_long_command with 'date && sleep 60 && date' at Sun Jan  4 10:14:36 PM EST 2026. Command is running in background.
 2026-01-04: Test of run_long_command with 'date && sleep 60 && date' completed successfully. Duration confirmed as 60 seconds.
+2026-01-05: Bumped version to 1.0.1 in package.json and gemini-extension.json. Pushed to GitHub.

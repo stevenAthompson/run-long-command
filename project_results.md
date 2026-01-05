@@ -1,7 +1,7 @@
 # Project Results: run_long_command
 
 ## Overview
-The `run_long_command` project provides a Gemini CLI extension that enables the agent to execute long-running shell commands in the background without blocking the agent's interaction loop. It utilizes `tmux` to notify the agent upon command completion.
+The `run_long_command` project (v1.0.1) provides a Gemini CLI extension that enables the agent to execute long-running shell commands in the background without blocking the agent's interaction loop. It utilizes `tmux` to notify the agent upon command completion.
 
 ## Goals
 - Execute arbitrary shell commands in the background.
