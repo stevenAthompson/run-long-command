@@ -4,8 +4,7 @@
   "mcpServers": {
     "runLongCommand": {
       "command": "node",
-      "args": ["${extensionPath}${/}dist${/}run_long_command.js"],
-      "cwd": "${extensionPath}"
+      "args": ["${extensionPath}${/}dist${/}run_long_command.js"]
     }
   }
 }

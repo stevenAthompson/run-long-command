@@ -93,7 +93,7 @@ server.registerTool('run_long_command', {
         content: [
             {
                 type: 'text',
-                text: `Command "${command}" started in the background. I will notify you when it finishes.`,
+                text: `Command "${command}" started in the background (PID: ${child.pid}, CWD: ${process.cwd()}). I will notify you when it finishes.`,
             },
         ],
     };

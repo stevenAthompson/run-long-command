@@ -40,6 +40,11 @@ gemini extensions install https://github.com/stevenAthompson/run-long-command
     npm run build
     ```
 
+4.  **Link the extension:**
+    ```bash
+    gemini extensions link .
+    ```
+
 ## Usage
 
 ### 1. Start the Tmux Session

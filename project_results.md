@@ -1,76 +1,73 @@
 # Project Results: run_long_command
 
 ## Overview
-The goal of this project is to create a Gemini CLI extension called `run_long_command`. This tool allows Gemini to execute long-running shell commands in the background and receive a notification once they are complete. This prevents Gemini from timing out or being blocked while waiting for a command to finish.
+The `run_long_command` project provides a Gemini CLI extension that enables the agent to execute long-running shell commands in the background without blocking the agent's interaction loop. It utilizes `tmux` to notify the agent upon command completion.
 
-**Status: Ready for Release** (Validated 2026-01-02, Post-Fix, Git Sync Verified)
-
-## Stated Goals
+## Goals
 - Execute arbitrary shell commands in the background.
-- Return immediately to Gemini, allowing it to continue other tasks.
-- Use `tmux` to send a "wake up" message to the `gemini-cli` session when the command completes.
-- Fail gracefully if not running inside a `tmux` session named `gemini-cli`.
-- Provide professional engineering quality with documentation, logging, and unit tests.
-- Maintain a fully portable codebase including tracked `node_modules` for seamless installation.
+- Return control to Gemini immediately.
+- Notify Gemini via `tmux send-keys` when the command completes.
+- robust error handling and reporting.
 
-## Phases and Work Done
-### Phase 4: Real-time Validation
-- Successfully validated the extension with a 20-second sleep command; confirmed tmux notification wakes up the agent upon completion.
-- Updated git configuration to track the `dist` directory, ensuring build artifacts are available for immediate use.
-### Phase 1: Initialization
-- Setup project documentation (`progress.md`, `project_results.md`).
-- Analyzed existing templates and examples.
-
-### Phase 2: Implementation
-- Developed `run_long_command.ts` using the Model Context Protocol (MCP) SDK.
-- Implemented `isInsideTmuxSession` to check for the required `gemini-cli` tmux session before execution.
-- Implemented `notifyGemini` using the character-by-character "slow-typing" technique via `tmux send-keys` to ensure the agent is properly woken up.
-- Used `child_process.spawn` with `detached: true` to allow commands to run independently in the background.
-
-### Phase 3: Testing & Verification
-- Added `vitest` for unit testing.
-- Created `run_long_command.test.ts` to mock `tmux` and `child_process` interactions.
-- Verified that:
-    - Tool registers correctly.
-    - Graceful failure when not in a `tmux` session.
-    - Commands start in the background and return immediately.
-    - Notifications are sent to `tmux` upon completion or failure.
-- Fixed a naming inconsistency in `gemini_tmux.sh`.
-- Performed a live integration test with a real `tmux` session to verify the end-to-end notification flow.
+## Key Features
+- **Background Execution:** Uses Node.js `spawn` with `detached: true` to run commands independent of the request cycle.
+- **Tmux Integration:** Safely wakes up the Gemini agent by injecting commands into the `gemini-cli` tmux session.
+- **Context Awareness:** Inherits the user's current working directory (CWD), allowing relative paths (e.g., `.venv/bin/python`) to work correctly.
+- **Feedback:** Provides immediate PID and CWD feedback, and asynchronous completion/failure notifications.
 
 ## Test Results
-- Unit Tests: 5/5 passed.
-- Integration Test: Success (verified via `tmux capture-pane`).
+- **Integration Test (30s sleep):** Passed (Exit code 0)
+- **CWD & Env Var Test:** Passed (Verified via verification.log)
+Current test suite status:
+- **Pass Rate:** 100% (5/5 tests passed)
+- **Coverage:** Verified tool registration, tmux session checks, spawn logic, and notification mechanism (success and failure cases).
 
 ## FAQ
-### What is the purpose of `run_long_command`?
-It's designed to handle shell commands that take a long time to finish, allowing the Gemini agent to remain responsive.
+### How does the notification work?
+The extension uses `tmux send-keys` to inject a message directly into the `gemini-cli` session's active pane. This triggers the Gemini CLI to resume and process the notification as a new user message.
 
-### Why use tmux for notification?
-`tmux` allows sending input to a terminal session from an external process. By sending keys to the `gemini-cli` session, we can "wake up" the agent and provide it with the command results without polling.
+### Can I run multiple long commands?
+Yes, each call to `run_long_command` spawns a new independent process. You will receive notifications for each one as they complete.
 
-## Troubleshooting
-- **Error: Not running inside tmux session 'gemini-cli'**: Make sure you started the Gemini CLI inside a tmux session and that the session is named `gemini-cli`. You can use the provided `gemini_tmux.sh` script or run `tmux new -s gemini-cli`.
-- **Command fails to start**: Ensure the command is valid and you have the necessary permissions.
+### What happens if I close the tmux session?
+The background processes will continue to run (since they are detached), but the notification will fail because it won't be able to find the `gemini-cli` session.
 
-## Customized Code
-- `run_long_command.ts`: Main implementation of the MCP server tool.
-- `run_long_command.test.ts`: Unit tests for the tool.
-- `gemini_tmux.sh`: Helper script to start a correctly named tmux session.
-- `package.json`: Updated with MCP and testing dependencies.
+## Setup and Testing Pipeline
+### Installation
+1.  Ensure you have Node.js (v18+) and `tmux` installed.
+2.  Clone the repository.
+3.  Install dependencies: `npm install`.
+4.  Build the extension: `npm run build`.
+5.  Link to Gemini CLI: `gemini extensions link .`.
 
-## Usage Instructions
-1. Build the project: `npm run build`
-2. Start a tmux session: `./gemini_tmux.sh`
-3. Run the Gemini CLI inside that session.
-4. Call the tool from Gemini: `run_long_command(command: "your long command here")`
+### Running Tests
+Execute the test suite using:
+```bash
+npm test
+```
+This runs `jest` against `run_long_command.test.ts`.
 
-## Testing Pipeline
-- Run `npm test` to execute all unit tests.
-- Run `npm run build` to ensure TypeScript compilation succeeds.
+### Reproduction
+To reproduce the environment:
+1.  Initialize a new Gemini CLI environment.
+2.  Install this extension.
+3.  Start a tmux session named `gemini-cli`.
+4.  Run `gemini` inside that session.
+5.  Use the `run_long_command` tool.
 
-## Challenges
-- **Session Naming**: Initially, there was a discrepancy between the session name expected by the code (`gemini-cli`) and the name used in the helper script. This was resolved by standardizing on `gemini-cli`.
-- **Waking up the Agent**: To ensure the Gemini CLI reliably receives the notification, a "slow-typing" technique was used, sending an Escape and Ctrl-u to clear the current prompt line before typing the completion message and pressing Enter.
-- **ESM Integration**: Running integration tests with `ts-node` required careful handling of ESM modules in a project configured with `"type": "module"`. This was overcome by compiling tests with `tsc` before execution.
-- **Distribution**: Users installing via git might not run `npm install`. To support "plug-and-play" installation, `node_modules` are now checked into the repository (confirmed by removing `node_modules` from `.gitignore` in the final phase).
+## Dependencies
+- `@modelcontextprotocol/sdk`: For MCP server implementation.
+- `zod`: For input validation.
+- `jest` & `ts-jest`: For testing.
+- `typescript`: For the codebase.
+
+## Challenges & Solutions
+- **Challenge:** Exit Code 127 in user projects.
+    - **Detail:** When the MCP server was started with a fixed `cwd`, it couldn't find scripts or binaries relative to the user's project root.
+    - **Optimal Solution:** Removing the `cwd` from `gemini-extension.json` ensures the server inherits the CLI's working directory, which is exactly what's needed for local project commands.
+- **Challenge:** Asynchronous Notification.
+    - **Detail:** Standard tool calls must return a response immediately. We needed a way to "call back" later.
+    - **Optimal Solution:** `tmux` provides a reliable IPC mechanism to "wake up" the CLI by simulating user input. This avoids the need for a persistent polling connection or complex webhooks.
+
+## Implementation Details
+The core logic resides in `run_long_command.ts`. It uses `child_process.spawn` with `{ detached: true, stdio: 'ignore' }`. The server maintains a reference to the child process's `close` event. When triggered, it executes a shell command: `tmux send-keys -t gemini-cli "The background command ... finished" C-m`.

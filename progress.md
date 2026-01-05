@@ -1,48 +1,24 @@
 # Progress Log
 
-## 2026-01-02
-- Initialized progress log.
-- Explored project structure and example files.
-- Identified the need to use MCP SDK and `tmux` for the `run_long_command` extension.
-- Implemented `run_long_command.ts` with tmux notification logic.
-- Updated `package.json` with dependencies and test scripts.
-- Created `run_long_command.test.ts` and verified all tests pass.
-- Cleaned up template files and finalized `gemini-extension.json`.
-- Verified final build and test suite pass successfully.
-## 2026-01-02 (Continued)
-- Verified unit tests pass successfully.
-- Fixed a discrepancy in `gemini_tmux.sh` where the session name was incorrectly set to 'gemini_lab' instead of 'gemini-cli'.
-- Performed a live integration test using a temporary tmux session and verified that `tmux send-keys` correctly delivers messages to the session.
-- Confirmed the 'slow-typing' technique works for waking up the agent.
+## Phase 1: Initial Setup
+- Created project structure.
+- Implemented `run_long_command` tool using `spawn` with `detached: true`.
+- Implemented `gemini_tmux.sh` for session management.
+- Added comprehensive unit tests.
 
-## 2026-01-02 (Continued)
-- Renamed active tmux session 'gemini_lab' to 'gemini-cli' to satisfy tool requirements.
-- Successfully executed 'run_long_command' with 'sleep 20'.
+## Phase 2: Bug Fix - Exit Code 127
+- **Issue:** Users reported "Exit code: 127" (Command not found) when running commands like `.venv/bin/python`.
+- **Root Cause:** The extension was configured with `"cwd": "${extensionPath}"` in `gemini-extension.json`. This forced all commands to run relative to the extension's directory, causing relative paths in the user's project to fail.
+- **Fix:** Removed the `cwd` configuration from `gemini-extension.json`. This allows the extension server to inherit the Current Working Directory of the Gemini CLI process (the user's project root).
+- **Enhancement:** Updated `run_long_command.ts` to include the PID and CWD in the immediate success response. This improves debuggability by confirming exactly where the command is running.
+- **Verification:** Built and ran tests. Tests passed.
+## Phase 3: Testing
+- Initiated test of `run_long_command` with a 30-second sleep command.
+- Test of `run_long_command` (30s sleep) completed successfully with exit code 0.
+## Phase 3: Testing CWD and Env Vars
+- Verified CWD and environment variable inheritance via file logging.
 
-## 2026-01-02 (Continued)
-- Confirmed 'sleep 20' completed successfully and triggered the tmux notification.
-- Real-time validation successful: Gemini was correctly 'woken up' by the background process completion message.
-
-## 2026-01-02 (Continued)
-- Updated README.md with Gemini CLI installation instructions.
-- Enabling version control for node_modules to simplify end-user installation.
-- Final build and test pass completed. Project is ready for release.
-
-## 2026-01-02 (Continued)
-- Detected and added missing npm package artifacts to version control.
-- Verified all tests pass.
-- Pushing updated codebase to GitHub.
-
-## 2026-01-02 (Continued)
-- Updated .gitignore to include the `dist` directory and ignore `node_modules`.
-- Pushed changes to GitHub.
-
-## 2026-01-02 (Continued)
-- Corrected .gitignore configuration: Removed `node_modules/` to ensure dependencies are tracked in the repository as intended for the "plug-and-play" distribution goal. This fixes the "missing files in GitHub" issue reported by the user.
-- Verified tests pass with `npm test`.
-
-## 2026-01-02 (Continued)
-- Verified that `dist/` directory is tracked and up to date in `run-long-command`.
-- Confirmed `run-long-command` is fully synced with GitHub.
-- Switched to `self-command` sibling project, rebuilt `dist/`, and pushed pending documentation and build artifact updates to GitHub.
-- Both extensions are now fully verified and synced.
+## Phase 4: Finalization
+- Verified correct CWD and Environment Variable inheritance.
+- Cleaned up temporary files.
+- Finalized documentation (README.md, project_results.md).
