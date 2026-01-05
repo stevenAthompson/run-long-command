@@ -22,3 +22,4 @@
 - Verified correct CWD and Environment Variable inheritance.
 - Cleaned up temporary files.
 - Finalized documentation (README.md, project_results.md).
+- Updated copyright notices to Steven A. Thompson.
