@@ -15,6 +15,7 @@ The `run_long_command` project (v1.0.1) provides a Gemini CLI extension that ena
 - **Context Awareness:** Inherits the user's current working directory (CWD), allowing relative paths (e.g., `.venv/bin/python`) to work correctly.
 - **Feedback:** Provides immediate PID and CWD feedback, and asynchronous completion/failure notifications.
 - **Output Capture:** Captures and reports the first 200 characters of stdout/stderr in the completion notification to assist with debugging.
+- **Agent Instructions:** Includes a `GEMINI.md` file to provide persistent context and instructions to the agent on how to use the tool and what to expect from its responses.
 
 ## Test Results
 - **Integration Test (30s sleep):** Passed (Exit code 0)

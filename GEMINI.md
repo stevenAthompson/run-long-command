@@ -1,26 +1,60 @@
-# GEMINI.md — Project run_long_command
+# Run Long Command Extension
 
-You are an agentic coding assistant. Your goal is to execute Project run_long_command phases with **professional engineering hygiene**.  Professional quality means docstrings, comments, logging, and **unit tests** for **all** non-trivial logic. Code that works, but lacks unit tests doesn't count as complete. Code that exists but which isn't documented doesn't not count as complete.
+This extension provides the `run_long_command` tool, which allows the Gemini CLI agent to execute long-running shell commands in the background without blocking further interaction.
 
-The goal of the project is to create a Gemini Cli Extension. There are basic template files in the project directory to start with. The complete project MUST:
-	Execute arbitrary shell commands similarly to gemini cli's builtin "run_shell_command", however run_long_command will instead return immediately rather than waiting for the command to finish. Gemini can then continue other pending work or end it's turn and await further instructions. "run_long_command" will then wait in the background until the shell command completes, and finally send a message to Gemini to wake up by using tmux to send-keys to a session named "gemini-cli". This way Gemini doesn't need to "poll" in a loop, which often times out or fails when waiting for long-running commands.
- 
-	There is an example python file named "example_python.py" in the project folder. It demostrates using tmux to send commands to a running gemini cli instance, but is not complete code on it's own. You can use the same methodology, though it will need to be adapated to work inside of a Gemini extension. 
+## Usage
 
-	The code should fail gracefully when  gemini was started outside of tmux and commands can't be sent, and it should fail BEFORE trying to execute the long runnning command. 
+When you encounter a task that involves a command expected to take a significant amount of time (e.g., complex builds, long-running tests, data processing), use `run_long_command`.
 
-	IMPORTANT: Do NOT add "node_modules" to .gitignore. This project requires dependencies to be committed to the repository.
+### Tool Signature
 
-After EVERY turn you must:
-	Append the current progress to a file named name "progress.md". Include a brief description of the most recent work. This file should only ever be appended to: NEVER delete this file. NEVER edit this file. It is a log of all progress, even mistakes. You may check the file for historical information about progress to prevent yourself from repeating past mistakes. 
-	Do NOT edit unit tests to work around failing tests. Hacking, altering, skipping, or avoiding tests that are faillng to avoid fixing the root issue is prohibited. If you are stuck ask for help and end your turn instead.
-	In another file named "project_results.md":
-		* Write or update the overview of the project so far. 
-		* Include a high level description of the projects purpose, stated goals, and the various phases and work done so far.
-		* Include the output of test results so far and how those compare to baseline numbers.
-		* Include a FAQ.
-		* Include basic troubleshooting steps should something go wrong.
-		* Include a list of the all the customized code and a brief description of what each does. Include instructions for using the project and for running the full testing pipeline.
-		* Include any miscellaneous information that another AI or programmer might want or need to know about the project, including dependencies and steps require to reproduce the work.
-		* Describe any challenges that were encountered along the way, and how they were overcome. Include enough detail that a reader can determine if/why solutions were deemed to be optimal. Do not justify those decisions, just describe them.
-		* Update this file with every turn to ensure that it stays up to date and complete. This is the primary deliverable of the project and must be 100% accurate and complete. 
+```typescript
+run_long_command({
+  command: string; // The shell command to execute.
+});
+```
+
+### Example
+
+```json
+{
+  "command": "npm run build-heavy-project"
+}
+```
+
+## How It Works
+
+1.  **Environment Check**: The tool first verifies that it is running within a `tmux` session named `gemini-cli`. This is required for the tool to "wake up" the agent upon completion.
+2.  **Immediate Return**: If the environment is valid, the tool spawns the command as a detached background process and returns immediately to the agent.
+3.  **Agent Continuation**: The agent receives a confirmation message and can continue with other tasks or end its turn.
+4.  **Completion Notification**: Once the background process finishes, the tool uses `tmux send-keys` to inject a completion message into the `gemini-cli` session. This message effectively "nudges" the agent to resume and process the results.
+
+## Response to the Agent
+
+### Initial Response (Immediate)
+
+When the tool is called, it returns a text content block similar to:
+
+```text
+Command "npm run build-heavy-project" started in the background (PID: 12345, CWD: /path/to/project). I will notify you when it finishes.
+```
+
+### Completion Message (via tmux)
+
+When the command completes, a message will appear in your input buffer as if typed by the user:
+
+```text
+Background command completed: "npm run build-heavy-project" (Exit code: 0) Output: [Project built successfully in 120s...]
+```
+
+If the command fails to start or encounters an error, the notification will reflect the failure:
+
+```text
+Background command failed: "npm run build-heavy-project" (Error: spawn npm ENOENT)
+```
+
+## Constraints and Requirements
+
+-   **Tmux**: The Gemini CLI MUST be running inside a `tmux` session named `gemini-cli`.
+-   **Output Truncation**: For the completion notification, only the first 200 characters of the command's combined stdout and stderr are captured and included in the message to avoid overwhelming the input buffer.
+-   **No Partial Output**: This tool does not provide real-time streaming of output. It only notifies you upon completion. For streaming output, use the standard `run_shell_command`.

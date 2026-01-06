@@ -10,3 +10,7 @@
 2026-01-04: Started test of run_long_command with 'date && sleep 60 && date' at Sun Jan  4 10:14:36 PM EST 2026. Command is running in background.
 2026-01-04: Test of run_long_command with 'date && sleep 60 && date' completed successfully. Duration confirmed as 60 seconds.
 2026-01-05: Bumped version to 1.0.1 in package.json and gemini-extension.json. Pushed to GitHub.
+## [2026-01-06] Documentation: Added GEMINI.md
+- Created GEMINI.md file in the root directory.
+- Documented tool usage, internal behavior, and expected response format for agents.
+- Clarified tmux session requirements and output truncation logic.
