@@ -14,3 +14,6 @@
 - Created GEMINI.md file in the root directory.
 - Documented tool usage, internal behavior, and expected response format for agents.
 - Clarified tmux session requirements and output truncation logic.
+## [2026-01-06] Maintenance: Version bump and manifest update
+- Incremented version to 1.0.2 in package.json and gemini-extension.json.
+- Added 'contextFileName' to gemini-extension.json to ensure GEMINI.md is loaded as context.
