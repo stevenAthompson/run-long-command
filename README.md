@@ -5,7 +5,7 @@ A Gemini CLI extension that enables the execution of long-running shell commands
 ## Features
 
 - **Asynchronous Execution:** Run commands like `sleep`, builds, or long scripts without timing out the Gemini CLI.
-- **Auto-Notification:** "Wakes up" the Gemini agent using `tmux send-keys` when the background task finishes.
+- **Smart Notifications:** "Wakes up" the Gemini agent using `tmux send-keys` when the background task finishes. It intelligently waits for the terminal to be idle (stable) before typing, ensuring it doesn't interrupt your work or the agent's current output.
 - **Fail-Safe:** Checks for the required `tmux` session environment before execution.
 
 ## Prerequisites

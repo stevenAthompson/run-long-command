@@ -23,6 +23,7 @@ The `run_long_command` project (v1.0.2) provides a Gemini CLI extension that ena
 - **GitHub Install Verification:** Passed (Exit code 0).
 - **Manual Verification (10s sleep):** Passed (echo "hello" && sleep 10 && echo "world").
 - **Manual Verification (60s sleep):** Passed (date && sleep 60 && date).
+- **Self-Test Verification (5s sleep):** Passed (sleep 5 && echo "Test successful: background command completed").
 Current test suite status:
 - **Pass Rate:** 100% (7/7 tests passed)
 - **Pass Rate:** 100% (6/6 tests passed)

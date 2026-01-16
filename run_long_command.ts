@@ -33,7 +33,47 @@ async function notifyGemini(message: string) {
   const target = `${SESSION_NAME}:0.0`;
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+  /**
+   * Waits for the tmux pane to be idle (text not changing) before sending the notification.
+   */
+  async function waitForTmuxIdle(target: string) {
+    let lastContent = '';
+    let stableChecks = 0;
+    const POLLING_INTERVAL = 1000; // Check every 1 second
+    const REQUIRED_STABLE_CHECKS = 3; // Require 3 consecutive seconds of no change
+    const MAX_WAIT_TIME = 600000; // 10 minutes max wait
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < MAX_WAIT_TIME) {
+      await delay(POLLING_INTERVAL);
+      
+      let currentContent = '';
+      try {
+        // Capture the visible text of the tmux pane
+        currentContent = execSync(`tmux capture-pane -p -t ${target}`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+      } catch (e) {
+        continue; // Retry on transient tmux errors
+      }
+
+      if (currentContent === lastContent) {
+        stableChecks++;
+      } else {
+        // Content changed (scrolling, typing, loading bars) -> Reset counter
+        stableChecks = 0;
+        lastContent = currentContent;
+      }
+
+      if (stableChecks >= REQUIRED_STABLE_CHECKS) {
+        return; // Output has stabilized
+      }
+    }
+    // If timed out, proceed anyway to ensure message delivery
+  }
+
   try {
+    // Wait for the session to be idle
+    await waitForTmuxIdle(target);
+
     // 1. Reset state: Send Escape and Ctrl-u
     execSync(`tmux send-keys -t ${target} Escape`);
     await delay(100);
