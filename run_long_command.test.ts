@@ -123,7 +123,7 @@ describe('run_long_command MCP Server', () => {
       .join('')
       .replace(/'\''/g, "'");
 
-    expect(typedChars).toContain('Background command completed');
+    expect(typedChars).toContain('Cmd: "echo hello" (0) Out: []');
 
     vi.useRealTimers();
   });
@@ -155,7 +155,7 @@ describe('run_long_command MCP Server', () => {
       .join('')
       .replace(/'\\''/g, "'");
 
-    expect(typedChars).toContain('Background command failed');
+    expect(typedChars).toContain('Err: "invalid-command" (spawn ENOENT)');
 
     vi.useRealTimers();
   });

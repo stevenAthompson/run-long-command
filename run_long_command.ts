@@ -40,7 +40,7 @@ async function notifyGemini(message: string) {
     let lastContent = '';
     let stableChecks = 0;
     const POLLING_INTERVAL = 1000; // Check every 1 second
-    const REQUIRED_STABLE_CHECKS = 3; // Require 3 consecutive seconds of no change
+    const REQUIRED_STABLE_CHECKS = 10; // Require 10 consecutive seconds of no change
     const MAX_WAIT_TIME = 600000; // 10 minutes max wait
     const startTime = Date.now();
 
@@ -155,20 +155,60 @@ server.registerTool(
 
     // Set up completion handler
     child.on('close', async (code) => {
-      let completionMessage = `Background command completed: "${command}" (Exit code: ${code})`;
-      if (output) {
-        const truncatedOutput = output.length > MAX_OUTPUT_LENGTH ? output.substring(0, MAX_OUTPUT_LENGTH) + '...' : output;
-        // Escape newlines for the notification message to be one line or handled gracefully
-        // Actually, for tmux send-keys, newlines might be interpreted as Enter.
-        // Let's replace newlines with spaces or explicit symbols for the notification.
-        const safeOutput = truncatedOutput.replace(/\n/g, ' ').replace(/\r/g, '');
-        completionMessage += ` Output: [${safeOutput}]`;
+      const MAX_MSG_LEN = 64;
+      const codeStr = `(${code})`;
+      
+      // Truncate command
+      let cmdStr = command;
+      const maxCmdLen = 15;
+      if (cmdStr.length > maxCmdLen) {
+        cmdStr = cmdStr.substring(0, maxCmdLen - 3) + '...';
       }
+
+      // Calculate available space for output
+      // Template: Cmd: "..." (0) Out: [...]
+      // Fixed structure length calculation:
+      // "Cmd: " (5) + " " (1) + " " (1) + " Out: [" (7) + "]" (1) = 15 chars fixed
+      // Plus quotes around cmd: 2 chars
+      // Total fixed overhead = 17 + cmdStr.length + codeStr.length
+      
+      const overhead = 17 + cmdStr.length + codeStr.length;
+      const availableForOut = MAX_MSG_LEN - overhead;
+      
+      let outStr = output ? output.replace(/[\r\n]+/g, ' ').trim() : '';
+      if (outStr.length > availableForOut) {
+        const truncateLen = Math.max(0, availableForOut - 3);
+        outStr = outStr.substring(0, truncateLen) + '...';
+      }
+
+      const completionMessage = `Cmd: "${cmdStr}" ${codeStr} Out: [${outStr}]`;
       await notifyGemini(completionMessage);
     });
 
     child.on('error', async (err) => {
-      const errorMessage = `Background command failed: "${command}" (Error: ${err.message})`;
+      const MAX_MSG_LEN = 64;
+      
+      let cmdStr = command;
+      const maxCmdLen = 15;
+      if (cmdStr.length > maxCmdLen) {
+        cmdStr = cmdStr.substring(0, maxCmdLen - 3) + '...';
+      }
+
+      // Template: Err: "..." (...)
+      // "Err: " (5) + " (" (2) + ")" (1) = 8 chars fixed
+      // Plus quotes: 2 chars
+      // Total overhead = 10 + cmdStr.length
+      
+      const overhead = 10 + cmdStr.length;
+      const availableForErr = MAX_MSG_LEN - overhead;
+
+      let errStr = err.message;
+      if (errStr.length > availableForErr) {
+        const truncateLen = Math.max(0, availableForErr - 3);
+        errStr = errStr.substring(0, truncateLen) + '...';
+      }
+
+      const errorMessage = `Err: "${cmdStr}" (${errStr})`;
       await notifyGemini(errorMessage);
     });
 
