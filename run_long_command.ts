@@ -125,6 +125,8 @@ server.registerTool(
       };
     }
 
+    const startTime = Date.now();
+
     // Spawn the background process
     const child = spawn(command, {
       shell: true,
@@ -151,10 +153,11 @@ server.registerTool(
       });
     }
 
-    child.unref();
+    // child.unref(); // Removed to ensure process tracking
 
     // Set up completion handler
     child.on('close', async (code) => {
+      const duration = Date.now() - startTime;
       const MAX_MSG_LEN = 64;
       const codeStr = `(${code})`;
       
@@ -166,12 +169,6 @@ server.registerTool(
       }
 
       // Calculate available space for output
-      // Template: Cmd: "..." (0) Out: [...]
-      // Fixed structure length calculation:
-      // "Cmd: " (5) + " " (1) + " " (1) + " Out: [" (7) + "]" (1) = 15 chars fixed
-      // Plus quotes around cmd: 2 chars
-      // Total fixed overhead = 17 + cmdStr.length + codeStr.length
-      
       const overhead = 17 + cmdStr.length + codeStr.length;
       const availableForOut = MAX_MSG_LEN - overhead;
       
@@ -181,7 +178,12 @@ server.registerTool(
         outStr = outStr.substring(0, truncateLen) + '...';
       }
 
-      const completionMessage = `Cmd: "${cmdStr}" ${codeStr} Out: [${outStr}]`;
+      let completionMessage = `Cmd: "${cmdStr}" ${codeStr} Out: [${outStr}]`;
+      
+      if (duration < 1000) {
+        completionMessage += " (Warn: Instant Exit)";
+      }
+
       await notifyGemini(completionMessage);
     });
 
@@ -194,11 +196,6 @@ server.registerTool(
         cmdStr = cmdStr.substring(0, maxCmdLen - 3) + '...';
       }
 
-      // Template: Err: "..." (...)
-      // "Err: " (5) + " (" (2) + ")" (1) = 8 chars fixed
-      // Plus quotes: 2 chars
-      // Total overhead = 10 + cmdStr.length
-      
       const overhead = 10 + cmdStr.length;
       const availableForErr = MAX_MSG_LEN - overhead;
 
